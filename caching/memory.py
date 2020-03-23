@@ -45,7 +45,7 @@ class CyclicCache(Memory):
         string = hashlib.md5(string).hexdigest()[:8]
         inCache = False
         for i in range(self.size):
-            if(address == self.cache[i]):
+            if(string == self.cache[i]):
                 inCache = True
                 break
         if(inCache):
