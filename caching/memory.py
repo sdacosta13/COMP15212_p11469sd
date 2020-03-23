@@ -34,6 +34,36 @@ class CyclicCache(Memory):
 
     def __init__(self):
         super().__init__()
+        self.cache = []
+        self.pointer = 0
+        self.size = 4
+        for i in range(self.size):
+            self.cache.append(None)
+        print(self.cache)
+    def lookup(self, address):
+        string = str(address ^ 3).encode()
+        string = hashlib.md5(string).hexdigest()[:8]
+        inCache = False
+        for i in range(self.size):
+            if(address == self.cache[i]):
+                inCache = True
+                break
+        if(inCache):
+            print("Cache hit", end=" ")
+        else:
+            print("Memory Access", end=" ")
+            self.hit_count += 1
+            if(self.pointer < self.size):
+                self.cache[self.pointer] = string
+                self.pointer += 1
+            else:
+                self.cache[0] = string
+                self.pointer = 1
+
+
+
+        return string
+
 
 
 class LRUCache(Memory):
