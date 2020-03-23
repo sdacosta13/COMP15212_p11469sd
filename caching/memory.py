@@ -77,31 +77,35 @@ class LRUCache(Memory):
 
     def __init__(self):
         super().__init__()
-        self.cache = {
-            None: 0,
-            None: 0,
-            None: 0,
-            None: 0
-        }
+        self.cache = [
+            [None, 0],
+            [None, 0],
+            [None, 0],
+            [None, 0]
+        ]
         self.size = 4
 
     def lookup(self, address):
+        inCache = False
         string = str(address ^ 3).encode()
         string = hashlib.md5(string).hexdigest()[:8]
         for i in range(self.size):
-            if(string == list(self.cache.keys())[i]):
+            if(string == self.cache[i][0]):
                 inCache = True
+                self.cache[i][1] += 1
                 break
         if(inCache):
             print("Cache hit", end = " ")
         else:
             print("Memory Access", end = " ")
             self.hit_count += 1
-            minUse = 0
-            minUseLoc = None
-            for memLoc, use in self.cache:
-                if(use < minUse):
-                    minUse = use
-                    minUseLoc = memLoc
-            del self.cache[minUseLoc]
-            self.cache[string] = 0
+            minUse = self.cache[0][1]
+            minUseLoc = 0
+
+            for itemLoc in range(self.size):
+                item = self.cache[itemLoc]
+                if(item[1] < minUse):
+                    minUse = item[1]
+                    minUseLoc = itemLoc
+            self.cache[minUseLoc] = [string,0]
+        return string
