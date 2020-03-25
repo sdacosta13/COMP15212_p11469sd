@@ -29,6 +29,7 @@ if __name__ == '__main__':
         print("{:03d},{:2d},".format(count, location), end=" ")
         print(model.lookup(location))
         print(model.cache)
+        print("\n")
         location = sys.stdin.readline().strip()
     print()
     print("Model: {}".format(model.name()))

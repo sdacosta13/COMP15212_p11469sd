@@ -2,7 +2,6 @@ import queue
 import hashlib
 from random import randrange
 
-
 # Various implementations of caching.
 class Memory:
     def __init__(self):
@@ -42,31 +41,26 @@ class CyclicCache(Memory):
         self.pointer = 0
         self.size = 4
         for i in range(self.size):
-            self.cache.append(None)
-        print(self.cache)
+            self.cache.append([None, None])
 
 
     def lookup(self, address):
-        string = str(address ^ 3).encode()
-        string = hashlib.md5(string).hexdigest()[:8]
         inCache = False
         for i in range(self.size):
-            if(string == self.cache[i]):
+            if(address == self.cache[i][0]):
                 inCache = True
                 break
         if(inCache):
-            print("Cache hit", end = " ")
+            val = self.cache[i][1]
         else:
-            print("Memory Access", end = " ")
-            self.hit_count += 1
+            val = super().lookup(address)
             if(self.pointer < self.size):
-                self.cache[self.pointer] = string
+                self.cache[self.pointer] = [address, val]
                 self.pointer += 1
             else:
-                self.cache[0] = string
+                self.cache[0] = [address,val]
                 self.pointer = 1
-
-        return string
+        return val
 
 
 class LRUCache(Memory):
@@ -81,36 +75,39 @@ class LRUCache(Memory):
 
     def __init__(self):
         super().__init__()
-        self.cache = [
-            [None, 0],
-            [None, 0],
-            [None, 0],
-            [None, 0]
-        ]
+        self.cache = []
         self.size = 4
+        for i in range(self.size):
+            self.cache.append(list([None, None, 0]))
 
 
     def lookup(self, address):
         inCache = False
-        string = str(address ^ 3).encode()
-        string = hashlib.md5(string).hexdigest()[:8]
         for i in range(self.size):
-            if(string == self.cache[i][0]):
+            if(address == self.cache[i][0]):
                 inCache = True
-                self.cache[i][1] += 1
+                self.cache[i][2] += 1
                 break
         if(inCache):
-            print("Cache hit", end = " ")
-        else:
-            print("Memory Access", end = " ")
-            self.hit_count += 1
-            minUse = self.cache[0][1]
-            minUseLoc = 0
+            val = self.cache[i][1]
+            self.cache[i][2] = 0
+            self.increaseTimeLived()
 
-            for itemLoc in range(self.size):
-                item = self.cache[itemLoc]
-                if(item[1] < minUse):
-                    minUse = item[1]
-                    minUseLoc = itemLoc
-            self.cache[minUseLoc] = [string, 0]
-        return string
+
+        else:
+            val = super().lookup(address)
+            maxVal = 0
+            maxLoc = 0
+            for i in range(self.size):
+                if self.cache[i][2] > maxVal:
+                    maxVal = self.cache[i][2]
+                    maxLoc = i
+            self.cache[maxLoc] = [address,val, 0]
+            self.increaseTimeLived()
+
+
+        return val
+
+    def increaseTimeLived(self):
+        for i in range(self.size):
+            self.cache[i][2] += 1
